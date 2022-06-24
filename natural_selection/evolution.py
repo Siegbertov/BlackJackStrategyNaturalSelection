@@ -1,52 +1,68 @@
 from .strategy import Strategy
+from tqdm import tqdm
 
 
 class Evolution:
-    __slots__ = ('dealer_threshold', 'population', 'population_size', 'number_of_generations', 'p_cross', 'p_mut', '__current_epoch', '__was_changed')
+    __slots__ = ('_player_threshold',  # stand = None
+                 '_dealer_threshold',  # stand = 17
 
-    def __init__(self, dealer_threshold=None, population_size=None, number_of_generations=None, p_cross=None, p_mut=None):
+                 '_population_size',  # stand = 100
+                 '_number_of_generations',  # stand = 10
+                 '_number_of_games_for_fitness',  # stand = 1000
+
+                 '_selection_method',  # "win" or "lose"
+                 '_p_crossover',  # stand = 0.9
+                 '_p_mutation',  # stand = 0.1
+
+                 '__population',  # stand = []
+                 '__current_epoch')  # stand = 0
+
+    def __init__(self, player_threshold=None, dealer_threshold=None,
+                 population_size=None, number_of_generations=None,
+                 number_of_games_for_fitness=None,
+                 selection_method=None, p_crossover=None, p_mutation=None):
         self.__current_epoch = 0
-        self.__was_changed = False
-        self.population = []
+        self.__population = []
 
-        if dealer_threshold is None:
-            raise Exception("Please set dealer_threshold")
-        self.dealer_threshold = dealer_threshold
-        self.population_size = population_size
-        self.number_of_generations = number_of_generations
-        self.p_cross = p_cross
-        self.p_mut = p_mut
-        self.info()
+        self._player_threshold = player_threshold
+        self._dealer_threshold = 17 if dealer_threshold is None else dealer_threshold
+
+        self._population_size = 100 if population_size is None else population_size
+        self._number_of_generations = 10 if number_of_generations is None else number_of_generations
+        self._number_of_games_for_fitness = 1000 if number_of_games_for_fitness is None else number_of_games_for_fitness
+
+        self._selection_method = "win" if selection_method is None else selection_method
+        self._p_crossover = 0.9 if p_crossover is None else p_crossover
+        self._p_mutation = 0.9 if p_mutation is None else p_mutation
+
+    def load_from_file(self, name_of_file):
+        # TODO implement for loading METADATA from txt file
+        pass
+
+    def show(self):
+        for st in self.__population:
+            print(st.fitness_score)
 
     def info(self):
-        if not self.__was_changed:
-            print("INITIAL EVOLUTION SETTINGS")
-        print(f"Population Size: {self.population_size}")
-        print(f"Number of Generations: {self.number_of_generations}")
-        print(f"Crossover Probability: {self.p_cross}")
-        print(f"Mutation Probability: {self.p_mut}")
-        print()
+        # TODO implement showing info of METADATA
+        pass
 
     def set(self, **kwargs):
-        self.__was_changed = True
         for key, value in kwargs.items():
-            self.__setattr__(key, value)
+            self.__setattr__(f"_{key}", value)
 
     def create_first_population(self):
-        if self.population_size is None:
-            raise Exception("population_size wasn't set")
-        for _ in range(self.population_size):
-            self.population.append(Strategy(self.dealer_threshold))
+        for _ in tqdm(range(self._population_size)):
+            self.__population.append(Strategy(self._player_threshold, self._dealer_threshold))
+        print(f"Population with {self._population_size} individuals was created!")
 
-        print(f"Population with {self.population_size} individuals was created!")
+    def _fitness_process(self):
+        for strategy in tqdm(self.__population):
+            strategy.fitness(self._number_of_games_for_fitness, self._selection_method)
 
     def _selection_process(self):
         # TODO: implement _selection_process()
-        pass
-
-    def _fitness_process(self):
-        for strategy in self.population:
-            strategy.fitness()
+        self.__population = sorted(self.__population, key=lambda strategy: strategy.fitness_score, reverse=(True if self._selection_method=="win" else False))
 
     def _crossover_process(self):
         # TODO: implement _crossover_process()
@@ -61,7 +77,7 @@ class Evolution:
         pass
 
     def run_one_epoch(self):
-        print(f"{'='*30+'>'} #{self.__current_epoch}")
+        print(f"{'='*30+'>'} Epoch #{self.__current_epoch}")
         # EVALUATING FITNESS SCORES
         self._fitness_process()
 
@@ -77,7 +93,7 @@ class Evolution:
         self.__current_epoch += 1
 
     def evolve(self):
-        for i in range(self.number_of_generations):
+        for i in range(self._number_of_generations):
             print(f"Started #{i}")
             self.run_one_epoch()
             print(f"Finished #{i}")

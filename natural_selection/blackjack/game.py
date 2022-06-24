@@ -38,4 +38,5 @@ class Game:
                 self.lose += 1
 
     def get_rate(self, rate='win'):
-        return self.__getattribute__(rate) / self.win + self.lose + self.draw
+        goal = self.__getattribute__(rate)
+        return goal / (self.win + self.lose + self.draw)

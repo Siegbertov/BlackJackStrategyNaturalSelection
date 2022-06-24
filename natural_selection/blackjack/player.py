@@ -5,7 +5,7 @@ class Player(Person):
     def __init__(self, p_strategy=None):
         super().__init__(strategy=p_strategy)
 
-    def make_decision(self, visible_card) -> tuple:
+    def make_decision(self, visible_card: Card) -> tuple:
         decs = []
         for hand in self.hands:
             state = []
@@ -16,10 +16,10 @@ class Player(Person):
                     state.append(card.rank)
             state = sorted(state, key=lambda x: ('A', '10', '9', '8', '7', '6', '5', '4', '3', '2').index(x))
 
-            if visible_card in ("J", "Q", "K"):
+            if visible_card.rank in ("J", "Q", "K"):
                 state.append('10')
             else:
-                state.append(visible_card)
+                state.append(visible_card.rank)
 
             current_question = "_".join(state)
 
