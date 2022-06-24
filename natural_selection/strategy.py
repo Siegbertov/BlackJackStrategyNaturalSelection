@@ -1,12 +1,16 @@
-from blackjack import Game
+from .blackjack import Game
+
+
+cards = ('A', '10', '9', '8', '7', '6', '5', '4', '3', '2')
+inputs = [f"{c1}_{c2}_{c3}" for c1 in cards for c2 in cards[cards.index(c1):] for c3 in cards]
+inputs.append('threshold')
+inputs.append('fitness_score')
 
 
 class Strategy:
+    __slots__ = tuple(inputs)
 
     def __init__(self):
-        self.genes = {}
-        self.fitness_score = None
-
         self._create()
 
     def _create(self):
