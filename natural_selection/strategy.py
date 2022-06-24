@@ -1,10 +1,12 @@
-from blackjack import Game, ActionSpace
+from .blackjack import Game, ActionSpace
 from random import choice
 
 
 class Strategy:
-    def __init__(self):
+    def __init__(self, d_threshold):
         self.decisions = {}
+        self.d_decisions = {'threshold': d_threshold}
+
         self.fitness_score = None
         self._create()
 
@@ -23,7 +25,7 @@ class Strategy:
 
     def fitness(self, number_of_games=1000, fitness_goal='win'):
         """fitness_goal => {'win', 'lose', 'draw'}"""
-        new_game = Game()  # TODO pass player-strategy
+        new_game = Game(self.decisions, self.d_decisions)  # TODO pass player-strategy
         for _ in range(number_of_games):
             new_game.play()
             new_game.reset()
