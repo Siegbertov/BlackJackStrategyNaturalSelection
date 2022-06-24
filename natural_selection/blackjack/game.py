@@ -38,5 +38,5 @@ class Game:
             elif result == ChampionSpace.DEALER:
                 self.lose += 1
 
-    def get_not_losing(self):
-        return (self.win + self.draw) / (self.win + self.draw + self.lose)
+    def get_rate(self, rate='win'):
+        return self.__getattribute__(rate) / self.win + self.lose + self.draw
