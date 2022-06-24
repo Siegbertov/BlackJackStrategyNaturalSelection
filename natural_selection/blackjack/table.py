@@ -8,12 +8,9 @@ from .champion import ChampionSpace
 class Table:
     GOAL = 21
 
-    def __init__(self, player_strategy=None, dealer_threshold=17, player_threshold=17):
-        self.player_threshold = player_threshold
-        self.dealer_threshold = dealer_threshold
-
-        self.player = Player(threshold=player_threshold, strategy=player_strategy)
-        self.dealer = Dealer(threshold=dealer_threshold)
+    def __init__(self, player_strategy=None, dealer_strategy=None):
+        self.player = Player(p_strategy=player_strategy)
+        self.dealer = Dealer(d_strategy=dealer_strategy)
         self.deck = Deck()
         self._start()
 
@@ -39,7 +36,7 @@ class Table:
         self.dealer.show()
 
     def play(self):
-        self.player.play(self.deck)
+        self.player.play(self.deck, self.dealer.get_visible_card())
         self.dealer.play(self.deck)
 
     def who_win(self):

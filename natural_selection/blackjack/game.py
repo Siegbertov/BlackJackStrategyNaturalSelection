@@ -5,9 +5,8 @@ from .champion import ChampionSpace
 class Game:
     GOAL = 21
 
-    def __init__(self, player_strategy=None, dealer_threshold=17, player_threshold=17):
-        self.table = Table(player_strategy=player_strategy, dealer_threshold=dealer_threshold, player_threshold=player_threshold)
-
+    def __init__(self, player_strategy=None, dealer_strategy=None):
+        self.table = Table(player_strategy=player_strategy, dealer_strategy=dealer_strategy)
         self.win = 0
         self.draw = 0
         self.lose = 0
