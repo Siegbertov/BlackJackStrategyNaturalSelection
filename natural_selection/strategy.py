@@ -1,5 +1,6 @@
 from .blackjack import Game, ActionSpace
-from random import choice
+from random import choice, random
+from copy import deepcopy
 
 
 class Strategy:
@@ -41,15 +42,22 @@ class Strategy:
         # TODO: implement mutate()
         pass
 
-    def crossover(self, other):
-        # TODO: implement crossover()
-        pass
+    def _set(self, state, decision):
+        self.p_decisions[state] = decision
 
+    def _get(self, state):
+        return self.p_decisions[state]
 
-def main():
-    my_strategy = Strategy()
-    print(my_strategy)
+    def crossover(self, other, cross_probability) -> tuple:
+        new_1 = deepcopy(self)
+        new_2 = deepcopy(other)
 
+        for state, decision in new_1.p_decisions.items():
+            if random() <= cross_probability:
+                temp_decision = new_2._get(state)
+                new_2._set(state, decision)
+                new_1._set(state, temp_decision)
+        new_1.fitness_score = None
+        new_2.fitness_score = None
 
-if __name__ == "__main__":
-    main()
+        return new_1, new_2

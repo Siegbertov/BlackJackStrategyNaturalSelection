@@ -16,13 +16,15 @@ class Evolution:
 
                  '__ancestors',  # stand = []
                  '__descendants',  # stand = []
-                 '__current_epoch')  # stand = 0
+                 '__current_best_fitness_score', # stand = None
+                 '__current_generation_number')  # stand = 0
 
     def __init__(self, player_threshold=None, dealer_threshold=None,
                  population_size=None, number_of_generations=None,
                  number_of_games_for_fitness=None,
                  selection_method=None, p_crossover=None, p_mutation=None):
-        self.__current_epoch = 0
+        self.__current_best_fitness_score = None
+        self.__current_generation_number = 0
         self.__ancestors = []
         self.__descendants = []
 
@@ -41,9 +43,22 @@ class Evolution:
         # TODO implement for loading METADATA from txt file
         pass
 
-    def show(self):
-        for strategy in self.__ancestors:
-            print(strategy.fitness_score)
+    def show(self, group="ancestors"):
+        if group == "ancestors":
+            print("ANCESTORS:")
+            if len(self.__ancestors):
+                for strategy in self.__ancestors:
+                    print(strategy.fitness_score)
+            else:
+                print("\t<EMPTY>")
+        elif group == "descendants":
+            print("DESCENDANTS:")
+            if len(self.__descendants):
+                for strategy in self.__descendants:
+                    print(strategy.fitness_score)
+            else:
+                print("\t<EMPTY>")
+        print()
 
     def info(self):
         # TODO implement showing info of METADATA
@@ -54,12 +69,12 @@ class Evolution:
             self.__setattr__(f"_{key}", value)
 
     def create_first_population(self):
-        for _ in tqdm(range(self._population_size)):
+        for _ in range(self._population_size):
             self.__descendants.append(Strategy(self._player_threshold, self._dealer_threshold))
-        print(f"Population with {self._population_size} individuals was created!")
+        print(f"INITIAL POPULATION WAS CREATED!\nN={self._population_size}\n")
 
     def _fitness_process(self):
-        for strategy in tqdm(self.__descendants):
+        for strategy in tqdm(self.__descendants, desc=f"GENERATION #{self.__current_generation_number}", unit="strategies", ncols=100):
             strategy.fitness(self._number_of_games_for_fitness, self._selection_method)
         self._move_from_desc_to_anc()
         self._sort_anc_by_fitness_score()
@@ -77,19 +92,21 @@ class Evolution:
             self.__ancestors.pop()
 
     def _crossover_process(self):
-        # TODO: implement _crossover_process()
-        pass
+        for i, strategy_1 in enumerate(self.__ancestors):
+            for j, strategy_2 in enumerate(self.__ancestors[self.__ancestors.index(strategy_1):]):
+                if strategy_1 is not strategy_2:
+                    new_strategy_1, new_strategy_2 = Strategy.crossover(strategy_1, strategy_2, self._p_crossover)
+                    self.__descendants.append(new_strategy_1)
+                    self.__descendants.append(new_strategy_2)
 
     def _mutation_process(self):
         # TODO: implement _mutation_process()
         pass
 
-    def get_best(self):
-        # TODO: implement get_best()
-        pass
+    def update_best(self):
+        self.__current_best_fitness_score = self.__ancestors[0].fitness_score
 
     def run_one_epoch(self):
-        print(f"{'='*30+'>'} Epoch #{self.__current_epoch}")
         # EVALUATING FITNESS SCORES
         self._fitness_process()
 
@@ -102,11 +119,13 @@ class Evolution:
         # PROCESS OF MUTATION
         self._mutation_process()
 
-        self.__current_epoch += 1
+        self.update_best()
+        print(f"{'=' * 30 + '>'} Generation #{self.__current_generation_number} finished")
+        print(f"{'=' * 30 + '>'} Best Score {self.__current_best_fitness_score}")
+        print()
+        self.__current_generation_number += 1
 
     def evolve(self):
-        for i in range(self._number_of_generations):
-            print(f"Started #{i}")
+        for i in range(self._number_of_generations+1):
             self.run_one_epoch()
-            print(f"Finished #{i}")
 
