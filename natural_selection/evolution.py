@@ -12,7 +12,7 @@ class Evolution:
 
                  '_selection_method',  # "win" or "lose"
                  '_p_crossover',  # stand = 0.9
-                 '_p_mutation',  # stand = 0.1
+                 '_p_mutation',  # stand = 0.05
 
                  '__ancestors',  # stand = []
                  '__descendants',  # stand = []
@@ -37,10 +37,14 @@ class Evolution:
 
         self._selection_method = "win" if selection_method is None else selection_method
         self._p_crossover = 0.9 if p_crossover is None else p_crossover
-        self._p_mutation = 0.9 if p_mutation is None else p_mutation
+        self._p_mutation = 0.05 if p_mutation is None else p_mutation
 
     def load_from_file(self, name_of_file):
         # TODO implement for loading METADATA from txt file
+        pass
+
+    def visualise_graph(self):
+        # TODO visualizing of how __current_best_fitness_score grow through each generation
         pass
 
     def show(self, group="ancestors"):
@@ -61,14 +65,14 @@ class Evolution:
         print()
 
     def info(self):
-        # TODO implement showing info of METADATA
+        # TODO implement showing METADATA of self
         pass
 
     def set(self, **kwargs):
         for key, value in kwargs.items():
             self.__setattr__(f"_{key}", value)
 
-    def create_first_population(self):
+    def init(self):
         for _ in range(self._population_size):
             self.__descendants.append(Strategy(self._player_threshold, self._dealer_threshold))
         print(f"INITIAL POPULATION WAS CREATED!\nN={self._population_size}\n")
@@ -100,10 +104,10 @@ class Evolution:
                     self.__descendants.append(new_strategy_2)
 
     def _mutation_process(self):
-        # TODO: implement _mutation_process()
-        pass
+        for strategy in self.__descendants:
+            strategy.mutate(self._p_mutation)
 
-    def update_best(self):
+    def _update_best(self):
         self.__current_best_fitness_score = self.__ancestors[0].fitness_score
 
     def run_one_epoch(self):
@@ -119,13 +123,14 @@ class Evolution:
         # PROCESS OF MUTATION
         self._mutation_process()
 
-        self.update_best()
+        self._update_best()
         print(f"{'=' * 30 + '>'} Generation #{self.__current_generation_number} finished")
-        print(f"{'=' * 30 + '>'} Best Score {self.__current_best_fitness_score}")
+        print(f"{'=' * 30 + '>'} Best {self._selection_method}-rate: {self.__current_best_fitness_score}")
         print()
         self.__current_generation_number += 1
 
     def evolve(self):
+        #  TODO: Improve evolve with WHILE and SOME_GOAL
         for i in range(self._number_of_generations+1):
             self.run_one_epoch()
 

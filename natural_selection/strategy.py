@@ -39,8 +39,23 @@ class Strategy:
         self.fitness_score = new_game.get_rate(fitness_goal)
 
     def mutate(self, mutation_probability):
-        # TODO: implement mutate()
-        pass
+        for state, decision in self.p_decisions.items():
+            if random() <= mutation_probability:
+                possible_decisions = []
+                if state == 'threshold' and self._p_threshold is None:
+                    possible_decisions = [16, 17, 18]
+                    possible_decisions.pop(possible_decisions.index(self._get(state)))
+                    self._set(state, choice(possible_decisions))
+                else:
+                    cards = state.split("_")[:-1]
+                    if len(set(cards)) == 1:
+                        possible_decisions = [ActionSpace.SPLIT, ActionSpace.HIT, ActionSpace.STAND]
+                        possible_decisions.pop(possible_decisions.index(self._get(state)))
+                        self._set(state, choice(possible_decisions))
+                    else:
+                        possible_decisions = [ActionSpace.HIT, ActionSpace.STAND]
+                        possible_decisions.pop(possible_decisions.index(self._get(state)))
+                        self._set(state, choice(possible_decisions))
 
     def _set(self, state, decision):
         self.p_decisions[state] = decision
@@ -61,3 +76,7 @@ class Strategy:
         new_2.fitness_score = None
 
         return new_1, new_2
+
+    def display(self):
+        #  TODO: Implement displaying/visualizing strategy -> pygame / matplotlib /...
+        pass
