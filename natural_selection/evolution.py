@@ -14,7 +14,8 @@ class Evolution:
                  '_p_crossover',  # stand = 0.9
                  '_p_mutation',  # stand = 0.1
 
-                 '__population',  # stand = []
+                 '__ancestors',  # stand = []
+                 '__descendants',  # stand = []
                  '__current_epoch')  # stand = 0
 
     def __init__(self, player_threshold=None, dealer_threshold=None,
@@ -22,7 +23,8 @@ class Evolution:
                  number_of_games_for_fitness=None,
                  selection_method=None, p_crossover=None, p_mutation=None):
         self.__current_epoch = 0
-        self.__population = []
+        self.__ancestors = []
+        self.__descendants = []
 
         self._player_threshold = player_threshold
         self._dealer_threshold = 17 if dealer_threshold is None else dealer_threshold
@@ -40,8 +42,8 @@ class Evolution:
         pass
 
     def show(self):
-        for st in self.__population:
-            print(st.fitness_score)
+        for strategy in self.__ancestors:
+            print(strategy.fitness_score)
 
     def info(self):
         # TODO implement showing info of METADATA
@@ -53,16 +55,26 @@ class Evolution:
 
     def create_first_population(self):
         for _ in tqdm(range(self._population_size)):
-            self.__population.append(Strategy(self._player_threshold, self._dealer_threshold))
+            self.__descendants.append(Strategy(self._player_threshold, self._dealer_threshold))
         print(f"Population with {self._population_size} individuals was created!")
 
     def _fitness_process(self):
-        for strategy in tqdm(self.__population):
+        for strategy in tqdm(self.__descendants):
             strategy.fitness(self._number_of_games_for_fitness, self._selection_method)
+        self._move_from_desc_to_anc()
+        self._sort_anc_by_fitness_score()
+
+    def _move_from_desc_to_anc(self):
+        while len(self.__descendants):
+            self.__ancestors.append(self.__descendants.pop())
+
+    def _sort_anc_by_fitness_score(self):
+        self.__ancestors = sorted(self.__ancestors, key=lambda strategy: strategy.fitness_score,
+                                  reverse=(True if self._selection_method == "win" else False))
 
     def _selection_process(self):
-        # TODO: implement _selection_process()
-        self.__population = sorted(self.__population, key=lambda strategy: strategy.fitness_score, reverse=(True if self._selection_method=="win" else False))
+        while len(self.__ancestors) > 10:
+            self.__ancestors.pop()
 
     def _crossover_process(self):
         # TODO: implement _crossover_process()
