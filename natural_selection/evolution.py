@@ -3,30 +3,28 @@ from tqdm import tqdm
 
 
 class Evolution:
-    __slots__ = ('_player_threshold',  # stand = None
-                 '_dealer_threshold',  # stand = 17
+    __slots__ = ('_player_threshold',  # default = None
+                 '_dealer_threshold',  # default = 17
 
-                 '_population_size',  # stand = 100
-                 '_number_of_generations',  # stand = 10
-                 '_fitness_goal',  # stand = None
-                 '_number_of_games_for_fitness',  # stand = 1000
+                 '_population_size',  # default = 100
+                 '_number_of_generations',  # default = 10
+                 '_fitness_goal',  # default = None
+                 '_number_of_games_for_fitness',  # default = 1000
 
-                 '_selection_method',  # "win" or "lose"
-                 '_p_crossover',  # stand = 0.9
-                 '_p_mutation',  # stand = 0.05
-                 '__is_done',
+                 '_selection_method',  # {"win" or "lose"} default = "win"
+                 '_p_crossover',  # default = 0.9
+                 '_p_mutation',  # default = 0.05
 
-                 '__ancestors',  # stand = []
-                 '__descendants',  # stand = []
-                 '__current_best_strategy', # stand = None
-                 '__current_generation_number')  # stand = 0
+                 '__ancestors',  # default = []
+                 '__descendants',  # default = []
+                 '__current_best_strategy', # default = None
+                 '__current_generation_number')  # default = 0
 
     def __init__(self, player_threshold=None, dealer_threshold=None,
                  population_size=None, number_of_generations=None,
                  number_of_games_for_fitness=None,
                  selection_method=None, p_crossover=None, p_mutation=None):
         self.__current_best_strategy = None
-        self.__is_done = False
         self._fitness_goal = None
         self.__current_generation_number = 0
         self.__ancestors = []
@@ -74,10 +72,6 @@ class Evolution:
 
     def set(self, **kwargs):
         for key, value in kwargs.items():
-            if key == 'fitness_goal':
-                self.__setattr__('_number_of_generations', None)
-            if key == 'number_of_generations':
-                self.__setattr__('_fitness_goal', None)
             self.__setattr__(f"_{key}", value)
 
     def init(self):
@@ -132,26 +126,26 @@ class Evolution:
         self._mutation_process()
 
         self._update_best()
+
+    def display_best(self):
+        self.__current_best_strategy.display(self.__current_generation_number)
+        self._generation_divider()
+
+    def _generation_divider(self):
         print(f"{'=' * 30 + '>'} Generation #{self.__current_generation_number} finished")
         print(f"{'=' * 30 + '>'} Best {self._selection_method}-rate: {self.__current_best_strategy.fitness_score}")
         print()
         self.__current_generation_number += 1
 
-    def display_best(self):
-        self.__current_best_strategy.display(self.__current_generation_number)
-
     def evolve(self):
-        if self._fitness_goal is None:
-            for i in range(self._number_of_generations + 1):
-                self.run_one_epoch()
-        elif self._number_of_generations is None:
-            if self.__current_generation_number == 0:
-                self.run_one_epoch()
-            if self._selection_method == "win":
-                while self.__current_best_strategy.fitness_score < self._fitness_goal or self.__current_best_strategy is None:
-                    self.run_one_epoch()
-            elif self._selection_method == "lose":
-                while self.__current_best_strategy.fitness_score > self._fitness_goal or self.__current_best_strategy is None:
-                    self.run_one_epoch()
+        for i in range(self._number_of_generations + 1):
+            self.run_one_epoch()
+            if self._fitness_goal is not None:
+                if self._selection_method == "win" and self.__current_best_strategy.fitness_score >= self._fitness_goal:
+                    break
+                elif self._selection_method == "lose" and self.__current_best_strategy.fitness_score <= self._fitness_goal:
+                    break
+            self._generation_divider()
 
         self.display_best()
+
