@@ -1,6 +1,7 @@
 from .blackjack import Game, ActionSpace
 from random import choice, random
 from copy import deepcopy
+from natural_selection.strategy_handler import StrategyHandler
 
 
 class Strategy:
@@ -77,6 +78,9 @@ class Strategy:
 
         return new_1, new_2
 
-    def display(self):
-        #  TODO: Implement displaying/visualizing strategy -> pygame / matplotlib /...
-        pass
+    def display(self, number_of_generation):
+        handler = StrategyHandler(self.p_decisions)
+        handler.show_image(number_of_generation=number_of_generation)
+
+
+

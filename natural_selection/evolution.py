@@ -14,6 +14,7 @@ class Evolution:
                  '_selection_method',  # "win" or "lose"
                  '_p_crossover',  # stand = 0.9
                  '_p_mutation',  # stand = 0.05
+                 '__is_done',
 
                  '__ancestors',  # stand = []
                  '__descendants',  # stand = []
@@ -25,6 +26,7 @@ class Evolution:
                  number_of_games_for_fitness=None,
                  selection_method=None, p_crossover=None, p_mutation=None):
         self.__current_best_strategy = None
+        self.__is_done = False
         self._fitness_goal = None
         self.__current_generation_number = 0
         self.__ancestors = []
@@ -135,6 +137,9 @@ class Evolution:
         print()
         self.__current_generation_number += 1
 
+    def display_best(self):
+        self.__current_best_strategy.display(self.__current_generation_number)
+
     def evolve(self):
         if self._fitness_goal is None:
             for i in range(self._number_of_generations + 1):
@@ -148,3 +153,5 @@ class Evolution:
             elif self._selection_method == "lose":
                 while self.__current_best_strategy.fitness_score > self._fitness_goal or self.__current_best_strategy is None:
                     self.run_one_epoch()
+
+        self.display_best()
