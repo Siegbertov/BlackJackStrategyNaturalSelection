@@ -8,6 +8,7 @@ class Evolution:
 
                  '_population_size',  # stand = 100
                  '_number_of_generations',  # stand = 10
+                 '_fitness_goal',  # stand = None
                  '_number_of_games_for_fitness',  # stand = 1000
 
                  '_selection_method',  # "win" or "lose"
@@ -16,14 +17,15 @@ class Evolution:
 
                  '__ancestors',  # stand = []
                  '__descendants',  # stand = []
-                 '__current_best_fitness_score', # stand = None
+                 '__current_best_strategy', # stand = None
                  '__current_generation_number')  # stand = 0
 
     def __init__(self, player_threshold=None, dealer_threshold=None,
                  population_size=None, number_of_generations=None,
                  number_of_games_for_fitness=None,
                  selection_method=None, p_crossover=None, p_mutation=None):
-        self.__current_best_fitness_score = None
+        self.__current_best_strategy = None
+        self._fitness_goal = None
         self.__current_generation_number = 0
         self.__ancestors = []
         self.__descendants = []
@@ -70,6 +72,10 @@ class Evolution:
 
     def set(self, **kwargs):
         for key, value in kwargs.items():
+            if key == 'fitness_goal':
+                self.__setattr__('_number_of_generations', None)
+            if key == 'number_of_generations':
+                self.__setattr__('_fitness_goal', None)
             self.__setattr__(f"_{key}", value)
 
     def init(self):
@@ -108,7 +114,7 @@ class Evolution:
             strategy.mutate(self._p_mutation)
 
     def _update_best(self):
-        self.__current_best_fitness_score = self.__ancestors[0].fitness_score
+        self.__current_best_strategy = self.__ancestors[0]
 
     def run_one_epoch(self):
         # EVALUATING FITNESS SCORES
@@ -125,12 +131,20 @@ class Evolution:
 
         self._update_best()
         print(f"{'=' * 30 + '>'} Generation #{self.__current_generation_number} finished")
-        print(f"{'=' * 30 + '>'} Best {self._selection_method}-rate: {self.__current_best_fitness_score}")
+        print(f"{'=' * 30 + '>'} Best {self._selection_method}-rate: {self.__current_best_strategy.fitness_score}")
         print()
         self.__current_generation_number += 1
 
     def evolve(self):
-        #  TODO: Improve evolve with WHILE and SOME_GOAL
-        for i in range(self._number_of_generations+1):
-            self.run_one_epoch()
-
+        if self._fitness_goal is None:
+            for i in range(self._number_of_generations + 1):
+                self.run_one_epoch()
+        elif self._number_of_generations is None:
+            if self.__current_generation_number == 0:
+                self.run_one_epoch()
+            if self._selection_method == "win":
+                while self.__current_best_strategy.fitness_score < self._fitness_goal or self.__current_best_strategy is None:
+                    self.run_one_epoch()
+            elif self._selection_method == "lose":
+                while self.__current_best_strategy.fitness_score > self._fitness_goal or self.__current_best_strategy is None:
+                    self.run_one_epoch()
